@@ -1,0 +1,2253 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Generador de Sales Sheet · Audio</title>
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@200;300;400;500;600;700;800;900&family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #1a1a1f;
+    color: #e8e8ec;
+    font-size: 13px;
+    line-height: 1.4;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .app { display: grid; grid-template-columns: 380px 1fr; height: 100vh; }
+
+  .form-panel {
+    background: #22232a;
+    border-right: 1px solid #33343d;
+    overflow-y: auto;
+  }
+  .form-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #33343d;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: #22232a;
+    z-index: 10;
+  }
+  .form-header h1 { margin: 0; font-size: 14px; font-weight: 600; }
+  .icon-btn {
+    background: #2e2f38;
+    border: 1px solid #3a3b46;
+    color: #c8c8d0;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-btn:hover { background: #3a3b46; color: #fff; }
+  .icon-btn svg { width: 14px; height: 14px; }
+
+  .form-content { padding: 16px 20px 40px; }
+  .form-section {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #2e2f38;
+  }
+  .form-section:last-child { border-bottom: none; }
+  .form-section h2 {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8b96;
+    margin: 0 0 12px;
+  }
+
+  .field { margin-bottom: 10px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: #b8b9c4;
+    margin-bottom: 4px;
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  input[type="text"], input[type="number"], input[type="url"], select, textarea {
+    width: 100%;
+    background: #1a1a1f;
+    border: 1px solid #33343d;
+    color: #e8e8ec;
+    padding: 7px 9px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 12px;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #4a6bff; }
+  textarea { resize: vertical; min-height: 50px; line-height: 1.4; }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #b8b9c4;
+    cursor: pointer;
+    margin: 6px 0;
+  }
+
+  .repeater { display: flex; flex-direction: column; gap: 6px; }
+  .repeater-item {
+    background: #1a1a1f;
+    border: 1px solid #2e2f38;
+    border-radius: 4px;
+    padding: 8px;
+    position: relative;
+  }
+  .repeater-item .remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: none;
+    border: none;
+    color: #6a6b76;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+  }
+  .repeater-item .remove:hover { color: #ff6b6b; }
+  .repeater-item input, .repeater-item textarea { font-size: 11px; padding: 5px 7px; }
+  .repeater-item .field { margin-bottom: 5px; }
+  .repeater-item .field:last-child { margin-bottom: 0; }
+  .add-btn {
+    background: #2e2f38;
+    border: 1px dashed #4a4b56;
+    color: #b8b9c4;
+    padding: 6px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: inherit;
+  }
+  .add-btn:hover { background: #3a3b46; color: #fff; border-color: #4a6bff; }
+
+  .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+  .file-input-wrapper input[type="file"] { position: absolute; left: -9999px; }
+  .file-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #1a1a1f;
+    border: 1px dashed #4a4b56;
+    color: #b8b9c4;
+    padding: 14px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .file-label.has-file {
+    border-style: solid;
+    border-color: #4a6bff;
+    color: #4a6bff;
+    padding: 8px;
+  }
+  .image-preview {
+    margin-top: 6px;
+    width: 100%;
+    height: 60px;
+    background-size: cover;
+    background-position: center;
+    background-color: #1a1a1f;
+    border-radius: 4px;
+    border: 1px solid #2e2f38;
+    display: none;
+  }
+  .image-preview.show { display: block; }
+
+  .admin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-overlay.show { display: flex; }
+  .admin-panel {
+    background: #22232a;
+    border-radius: 8px;
+    width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #33343d;
+  }
+  .admin-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #33343d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: #22232a;
+  }
+  .admin-header h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  .admin-content { padding: 16px 20px 20px; }
+
+  .preview-panel {
+    background: #16161b;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .preview-toolbar {
+    position: sticky;
+    top: -24px;
+    background: #16161b;
+    padding: 12px 0 16px;
+    margin: -24px 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+    border-bottom: 1px solid #2a2a32;
+  }
+  .preview-toolbar .meta { font-size: 11px; color: #8a8b96; }
+  .preview-toolbar .meta strong { color: #e8e8ec; font-weight: 600; }
+  .preview-toolbar .tools { display: flex; gap: 8px; }
+  .btn {
+    background: #4a6bff;
+    border: none;
+    color: #fff;
+    padding: 7px 14px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { background: #5a7cff; }
+  .btn.secondary { background: #2e2f38; }
+  .btn.secondary:hover { background: #3a3b46; }
+  .btn svg { width: 13px; height: 13px; }
+
+  .overflow-warning {
+    background: #ff6b3d;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    display: none;
+    margin-bottom: 12px;
+    align-items: center;
+    gap: 8px;
+  }
+  .overflow-warning.show { display: flex; }
+  .overflow-warning svg { width: 14px; height: 14px; }
+
+  .page-wrap {
+    transform-origin: top center;
+    margin: 0 auto;
+  }
+  .page {
+    width: 8.5in;
+    height: 11in;
+    background: #fff;
+    color: #222;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .page.a4 { width: 210mm; height: 297mm; }
+  .page.overflow { box-shadow: 0 8px 40px rgba(255,107,61,0.5), 0 0 0 3px #ff6b3d; }
+
+  /* RCA defaults */
+  .page {
+    --brand-primary: #D50032;
+    --brand-text: #444041;
+    --brand-text-soft: #77787B;
+    --brand-border: #DCDDDE;
+    --brand-light: #F1F1F2;
+    --brand-dark: #2a2628;
+    --brand-display-font: 'Mulish', system-ui, sans-serif;
+    --brand-display-weight-light: 200;
+    --brand-display-weight-bold: 700;
+  }
+  .page.brand-westinghouse {
+    --brand-primary: #295BDD;
+    --brand-text: #1a1a1a;
+    --brand-text-soft: #555;
+    --brand-dark: #25346A;
+    --brand-display-font: 'Barlow Condensed', system-ui, sans-serif;
+    --brand-display-weight-light: 500;
+    --brand-display-weight-bold: 800;
+  }
+  .page.brand-hotline-blanca,
+  .page.brand-hotline-tv,
+  .page.brand-hotline-audio {
+    --brand-primary: #2B3C73;
+    --brand-dark: #231F20;
+  }
+  .page.brand-hotline-cuidado {
+    --brand-primary: #EE212E;
+    --brand-dark: #231F20;
+  }
+
+  .p-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.18in 0.4in;
+    border-bottom: 1px solid var(--brand-border);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .p-topbar-left { display: flex; align-items: center; gap: 14px; }
+  .p-logo {
+    background: var(--brand-primary);
+    color: #fff;
+    font-family: var(--brand-display-font);
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+  }
+  .p-logo.westinghouse {
+    border-radius: 50%;
+    font-style: italic;
+    font-size: 18px;
+  }
+  .p-logo-img {
+    display: flex;
+    align-items: center;
+    height: 0.4in;
+  }
+  .p-logo-img img {
+    max-height: 0.4in;
+    max-width: 1.4in;
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+  .p-topbar-meta { line-height: 1.15; }
+  .p-topbar-meta .kicker {
+    font-size: 8.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brand-primary);
+    font-weight: 700;
+  }
+  .p-topbar-meta .title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-top: 1px;
+  }
+  .p-price-block { display: flex; flex-direction: column; align-items: flex-end; }
+  .p-price-block .price-label {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brand-text-soft);
+    font-weight: 600;
+  }
+  .p-price-block .price-value {
+    font-family: var(--brand-display-font);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brand-text);
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .p-price-block .price-value .currency {
+    font-size: 13px;
+    color: var(--brand-text-soft);
+    font-weight: 500;
+    margin-right: 2px;
+  }
+  .p-price-block .price-fob {
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brand-text-soft);
+    margin-top: 2px;
+  }
+  .p-price-block .docmeta {
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brand-text-soft);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .p-sku-tag {
+    display: inline-block;
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-primary);
+    padding: 3px 8px;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .p-hero {
+    position: relative;
+    height: 3.1in;
+    background: var(--brand-dark);
+    color: #fff;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .p-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: saturate(1.05) brightness(0.7);
+  }
+  .p-hero-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.85));
+  }
+  .p-hero-bg.has-accent::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(60% 80% at 30% 60%, var(--brand-primary), transparent 60%);
+    opacity: 0.35;
+    mix-blend-mode: screen;
+  }
+  .p-hero-grid {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    grid-template-rows: 1fr;
+    padding: 0.3in 0.4in 0.26in;
+    gap: 0.2in;
+    min-height: 0;
+  }
+  .p-hero-copy { display: flex; flex-direction: column; justify-content: space-between; }
+  .p-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--brand-primary);
+    color: #fff;
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 5px 9px;
+    align-self: flex-start;
+  }
+  .p-hero-eyebrow .dot {
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .p-hero h1 {
+    font-family: var(--brand-display-font);
+    font-weight: var(--brand-display-weight-light);
+    font-size: 34px;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin: 10px 0 0;
+    color: #fff;
+    max-width: 9ch;
+  }
+  .p-hero h1 em {
+    font-style: normal;
+    font-weight: var(--brand-display-weight-bold);
+    color: var(--brand-primary);
+    display: block;
+  }
+  .p-hero h1.gradient em {
+    background: linear-gradient(180deg, #ff8a3d 0%, #ff3b8a 50%, #b34dff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .p-hero-sub {
+    margin-top: 10px;
+    max-width: 4in;
+    font-size: 11px;
+    line-height: 1.45;
+    font-weight: 300;
+    color: rgba(255,255,255,0.85);
+  }
+  .p-hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 24px;
+    align-items: flex-end;
+  }
+  .p-stat { display: flex; flex-direction: column; gap: 2px; }
+  .p-stat .v {
+    font-family: var(--brand-display-font);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+  }
+  .p-stat .v small {
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    margin-left: 2px;
+  }
+  .p-stat .l {
+    font-size: 7.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    font-weight: 700;
+  }
+  .p-stat-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255,255,255,0.18);
+  }
+  .p-hero-product {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .p-hero-product .glow {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--brand-primary), transparent 70%);
+    filter: blur(20px);
+    opacity: 0.3;
+  }
+  .p-hero-product img {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 30px rgba(0,0,0,0.5));
+  }
+  .p-hero-product .placeholder {
+    position: relative;
+    z-index: 2;
+    width: 70%;
+    height: 70%;
+    border: 2px dashed rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 11px;
+  }
+
+  /* Modo estricto */
+  .p-hero.strict-hero { background: #fff; color: var(--brand-text); height: 3.1in; }
+  .p-hero.strict-hero .p-hero-bg { display: none; }
+  .p-hero.strict-hero::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 55%;
+    background: var(--brand-light);
+    z-index: 0;
+  }
+  .p-hero.strict-hero .p-hero-grid { padding: 0.32in 0.4in; }
+  .p-hero.strict-hero h1.strict {
+    color: var(--brand-text);
+    font-weight: 600;
+    font-size: 30px;
+  }
+  .p-hero.strict-hero h1.strict em { color: var(--brand-primary); font-weight: 700; }
+  .p-hero.strict-hero .p-hero-sub { color: var(--brand-text-soft); }
+  .p-hero.strict-hero .p-stat .v { color: var(--brand-text); }
+  .p-hero.strict-hero .p-stat .v small { color: var(--brand-text-soft); }
+  .p-hero.strict-hero .p-stat .l { color: var(--brand-text-soft); }
+  .p-hero.strict-hero .p-stat-divider { background: var(--brand-border); }
+  .p-hero.strict-hero .p-hero-product .glow {
+    background: radial-gradient(circle, rgba(0,0,0,0.08), transparent 70%);
+    opacity: 1;
+  }
+  .p-hero.strict-hero .p-hero-product img {
+    filter: drop-shadow(0 12px 20px rgba(0,0,0,0.18));
+  }
+  .p-hero.strict-hero .p-hero-product .placeholder {
+    border-color: rgba(0,0,0,0.2);
+    color: rgba(0,0,0,0.4);
+  }
+
+  /* Tratamiento Westinghouse círculo */
+  .p-hero.westinghouse-style { background: var(--brand-primary); }
+  .p-hero.westinghouse-style .p-hero-bg { display: none; }
+  .p-hero.westinghouse-style .p-hero-product .glow { display: none; }
+  .p-hero.westinghouse-style .p-hero-product::before {
+    content: "";
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    background: #fff;
+    border-radius: 50%;
+    z-index: 1;
+  }
+
+  /* Logo de serie (subido) */
+  .series-stamp {
+    position: absolute;
+    top: 0.2in;
+    right: 0.4in;
+    z-index: 3;
+    pointer-events: none;
+    max-width: 1.6in;
+    max-height: 0.9in;
+  }
+  .series-stamp img {
+    display: block;
+    max-width: 100%;
+    max-height: 0.9in;
+    width: auto;
+    height: auto;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  }
+
+  .p-featurebar {
+    display: grid;
+    grid-template-columns: repeat(var(--feat-bar-cols, 4), 1fr);
+    background: var(--brand-dark);
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .p-featurebar .f {
+    padding: 0.12in 0.14in;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .p-featurebar .f:last-child { border-right: none; }
+  .p-featurebar .f .lab {
+    font-size: 7.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    font-weight: 700;
+  }
+  .p-featurebar .f .val {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .p-section { padding: 0.18in 0.4in; flex-shrink: 0; }
+  .p-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.1in;
+    gap: 0.2in;
+  }
+  .p-section-eyebrow {
+    font-size: 8.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brand-primary);
+    font-weight: 700;
+  }
+  .p-section-title {
+    font-family: var(--brand-display-font);
+    font-weight: var(--brand-display-weight-light);
+    font-size: 19px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--brand-text);
+    margin: 2px 0 0;
+  }
+  .p-section-title strong {
+    font-weight: var(--brand-display-weight-bold);
+    color: var(--brand-primary);
+  }
+  .p-section-aside {
+    max-width: 2.2in;
+    font-size: 9px;
+    line-height: 1.45;
+    color: var(--brand-text-soft);
+  }
+
+  .p-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.08in;
+  }
+  .p-feat {
+    border: 1px solid var(--brand-border);
+    padding: 0.12in 0.12in 0.1in;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .p-feat .num {
+    font-family: var(--brand-display-font);
+    font-size: 7.5px;
+    font-weight: 700;
+    color: var(--brand-primary);
+    letter-spacing: 0.16em;
+    margin-bottom: 1px;
+  }
+  .p-feat h3 {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin: 0;
+    line-height: 1.2;
+  }
+  .p-feat p {
+    margin: 0;
+    font-size: 8.5px;
+    line-height: 1.4;
+    color: var(--brand-text-soft);
+  }
+
+  .p-specs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0 0.24in;
+  }
+  .p-spec-group h4 {
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin: 0 0 5px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--brand-dark);
+  }
+  .p-spec-group dl {
+    display: grid;
+    grid-template-columns: 40% 1fr;
+    margin: 0 0 0.1in;
+  }
+  .p-spec-group dt, .p-spec-group dd {
+    padding: 3px 0;
+    font-size: 8.5px;
+    border-bottom: 1px solid var(--brand-border);
+    line-height: 1.3;
+  }
+  .p-spec-group dt { font-weight: 600; color: var(--brand-text); }
+  .p-spec-group dd { margin: 0; color: var(--brand-text-soft); }
+
+  .p-split {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 0.2in;
+  }
+  .p-pitch h3, .p-box h3 {
+    font-family: var(--brand-display-font);
+    font-size: 17px;
+    font-weight: var(--brand-display-weight-light);
+    margin: 0 0 6px;
+    color: var(--brand-text);
+    line-height: 1.1;
+  }
+  .p-pitch h3 strong, .p-box h3 strong {
+    font-weight: var(--brand-display-weight-bold);
+    color: var(--brand-primary);
+  }
+  .p-pitch p {
+    font-size: 9.5px;
+    line-height: 1.5;
+    color: var(--brand-text-soft);
+    margin: 0 0 6px;
+  }
+  .p-pitch .signoff {
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-top: 6px;
+  }
+  .p-pitch .signoff strong { color: var(--brand-primary); }
+
+  .p-box {
+    background: var(--brand-light);
+    padding: 0.16in 0.18in;
+  }
+  .p-box-list { list-style: none; padding: 0; margin: 0; }
+  .p-box-list li {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--brand-text);
+    padding: 3px 0;
+    border-bottom: 1px solid var(--brand-border);
+  }
+  .p-box-list li:last-child { border-bottom: none; }
+  .p-box-list .num {
+    font-family: var(--brand-display-font);
+    font-size: 7.5px;
+    font-weight: 700;
+    color: var(--brand-primary);
+    letter-spacing: 0.1em;
+  }
+  .p-box-list .qty { color: var(--brand-text-soft); font-size: 8.5px; }
+
+  .p-footer {
+    margin-top: auto;
+    padding: 0.12in 0.4in;
+    background: var(--brand-dark);
+    color: rgba(255,255,255,0.55);
+    font-size: 7.5px;
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .p-footer .made {
+    color: #fff;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .p-footer .made span { color: var(--brand-primary); }
+
+  @media print {
+    body { background: #fff; overflow: visible; height: auto; }
+    .form-panel, .preview-toolbar, .overflow-warning, .admin-overlay { display: none !important; }
+    .app { display: block; }
+    .preview-panel { padding: 0; background: #fff; height: auto; overflow: visible; }
+    .page-wrap { transform: none !important; }
+    .page { box-shadow: none; }
+    @page { size: letter; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="form-panel">
+    <div class="form-header">
+      <h1>Generador de Sales Sheet</h1>
+      <button class="icon-btn" id="openAdmin" title="Configuración">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <div class="form-content">
+
+      <div class="form-section">
+        <h2>Marca e Identidad</h2>
+        <div class="field">
+          <label>Marca</label>
+          <select id="brand">
+            <option value="rca">RCA</option>
+            <option value="westinghouse">Westinghouse</option>
+            <option value="hotline-blanca">Hotline · Línea Blanca</option>
+            <option value="hotline-tv">Hotline · TV</option>
+            <option value="hotline-audio">Hotline · Audio y Video</option>
+            <option value="hotline-cuidado">Hotline · Cuidado Personal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Modo de marca</label>
+          <select id="brandMode">
+            <option value="extended">Extendido por serie (estilo Tokyo)</option>
+            <option value="strict">Estricto según manual</option>
+          </select>
+        </div>
+        <div style="background:#1a1a1f;border:1px solid #2e2f38;border-radius:4px;padding:8px 10px;font-size:10px;line-height:1.5;color:#8a8b96;margin-bottom:10px;">
+          <strong style="color:#b8b9c4;display:block;margin-bottom:3px;">Comportamiento del modo</strong>
+          <span id="modeExplainer"></span>
+        </div>
+        <div class="field">
+          <label>Cargar serie desde biblioteca</label>
+          <select id="seriesPicker">
+            <option value="">— Ninguna / Personalizado —</option>
+          </select>
+          <div style="font-size:10px;color:#6a6b76;margin-top:4px;line-height:1.4;">Administra las series en Configuración → Biblioteca de Series</div>
+        </div>
+        <div class="field">
+          <label>Nombre de serie (opcional · solo modo extendido)</label>
+          <input type="text" id="seriesName" placeholder="ej. Tokyo, Bocina Tokyo" />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Producto</h2>
+        <div class="field">
+          <label>Modelo</label>
+          <input type="text" id="model" placeholder="ej. RCTS6540R" />
+        </div>
+        <div class="field">
+          <label>Categoría de producto</label>
+          <input type="text" id="category" placeholder="ej. Bocina Inalámbrica" />
+        </div>
+        <div class="field">
+          <label>Titular</label>
+          <input type="text" id="headline" placeholder="ej. Hecha para la" />
+        </div>
+        <div class="field">
+          <label>Énfasis del titular (toma color de acento)</label>
+          <input type="text" id="headlineEm" placeholder="ej. fiesta sin fin." />
+        </div>
+        <div class="field">
+          <label>Subtítulo</label>
+          <textarea id="subhead" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Visuales</h2>
+        <div class="field">
+          <label>Logo de marca (PNG transparente · sobrescribe el predeterminado)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="brandLogo" accept="image/*" />
+            <label for="brandLogo" class="file-label" id="brandLogoLabel">+ Subir logo de marca</label>
+          </div>
+          <div class="image-preview" id="brandLogoPreview"></div>
+          <div style="font-size:10px;color:#6a6b76;margin-top:4px;line-height:1.4;">Reemplaza el logo predeterminado en la esquina superior izquierda. Funciona mejor con fondo transparente.</div>
+          <button class="add-btn" id="clearBrandLogo" style="margin-top:6px;display:none;">Quitar logo de marca</button>
+        </div>
+        <div class="field">
+          <label>Imagen de producto</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="productImg" accept="image/*" />
+            <label for="productImg" class="file-label" id="productImgLabel">+ Subir imagen de producto</label>
+          </div>
+          <div class="image-preview" id="productImgPreview"></div>
+        </div>
+        <div class="field">
+          <label>Imagen lifestyle / ambiente</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="lifestyleImg" accept="image/*" />
+            <label for="lifestyleImg" class="file-label" id="lifestyleImgLabel">+ Subir imagen lifestyle</label>
+          </div>
+          <div class="image-preview" id="lifestyleImgPreview"></div>
+          <div style="font-size:10px;color:#6a6b76;margin-top:4px;line-height:1.4;">Se usa como fondo del hero en modo extendido. Se ignora en modo estricto.</div>
+        </div>
+        <div class="field">
+          <label>Logo de serie (PNG transparente · solo modo extendido)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="seriesLogo" accept="image/*" />
+            <label for="seriesLogo" class="file-label" id="seriesLogoLabel">+ Subir logo de serie</label>
+          </div>
+          <div class="image-preview" id="seriesLogoPreview"></div>
+          <div style="font-size:10px;color:#6a6b76;margin-top:4px;line-height:1.4;">Aparece en la esquina superior derecha del hero. Funciona mejor con fondo transparente.</div>
+          <button class="add-btn" id="clearSeriesLogo" style="margin-top:6px;display:none;">Quitar logo de serie</button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Estadísticas del Hero</h2>
+        <div class="repeater" id="statsRepeater"></div>
+        <button class="add-btn" id="addStat">+ Agregar estadística</button>
+      </div>
+
+      <div class="form-section">
+        <h2>Barra de Características (bajo el hero)</h2>
+        <div class="repeater" id="barRepeater"></div>
+        <button class="add-btn" id="addBar">+ Agregar elemento</button>
+      </div>
+
+      <div class="form-section">
+        <h2>Sección de Características</h2>
+        <div class="field">
+          <label>Etiqueta superior</label>
+          <input type="text" id="featuresEyebrow" value="Por qué se vende" />
+        </div>
+        <div class="field">
+          <label>Título</label>
+          <input type="text" id="featuresTitle" />
+        </div>
+        <div class="field">
+          <label>Énfasis del título</label>
+          <input type="text" id="featuresTitleEm" />
+        </div>
+        <div class="field">
+          <label>Texto lateral (columna derecha)</label>
+          <textarea id="featuresAside" rows="2"></textarea>
+        </div>
+        <label style="font-size:10px;color:#8a8b96;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;display:block;margin:12px 0 6px;">Tarjetas de características</label>
+        <div class="repeater" id="featuresRepeater"></div>
+        <button class="add-btn" id="addFeature">+ Agregar característica</button>
+      </div>
+
+      <div class="form-section">
+        <h2>Especificaciones</h2>
+        <div class="repeater" id="specsRepeater"></div>
+        <button class="add-btn" id="addSpecGroup">+ Agregar grupo</button>
+      </div>
+
+      <div class="form-section">
+        <h2>Bloque de Argumento</h2>
+        <div class="field">
+          <label>Etiqueta superior</label>
+          <input type="text" id="pitchEyebrow" value="El argumento" />
+        </div>
+        <div class="field">
+          <label>Titular</label>
+          <input type="text" id="pitchHeadline" />
+        </div>
+        <div class="field">
+          <label>Énfasis del titular</label>
+          <input type="text" id="pitchHeadlineEm" />
+        </div>
+        <div class="field">
+          <label>Cuerpo</label>
+          <textarea id="pitchBody" rows="4"></textarea>
+        </div>
+        <div class="field">
+          <label>Línea de cierre</label>
+          <input type="text" id="pitchSignoff" placeholder="Se llena automáticamente según la marca" />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Incluye en la Caja</h2>
+        <div class="field">
+          <label>Título de sección</label>
+          <input type="text" id="boxTitle" />
+        </div>
+        <div class="repeater" id="boxRepeater"></div>
+        <button class="add-btn" id="addBoxItem">+ Agregar artículo</button>
+      </div>
+
+    </div>
+  </aside>
+
+  <main class="preview-panel">
+    <div class="preview-toolbar">
+      <div class="meta">
+        <strong id="metaTitle">Sales Sheet sin título</strong> · <span id="metaPage">Carta</span>
+      </div>
+      <div class="tools">
+        <button class="btn secondary" id="exportJSON">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Guardar
+        </button>
+        <button class="btn secondary" id="importJSON">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Cargar
+        </button>
+        <button class="btn" id="printBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir / PDF
+        </button>
+      </div>
+    </div>
+
+    <div class="overflow-warning" id="overflowWarning">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      El contenido excede la página — recorta texto o características.
+    </div>
+
+    <div class="page-wrap" id="pageWrap"></div>
+  </main>
+
+</div>
+
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-panel">
+    <div class="admin-header">
+      <h2>Configuración</h2>
+      <button class="icon-btn" id="closeAdmin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="admin-content">
+
+      <div class="form-section">
+        <h2>Precio y Términos Comerciales</h2>
+        <label class="checkbox-row">
+          <input type="checkbox" id="showPrice" checked />
+          Mostrar bloque de precio en la hoja
+        </label>
+        <div class="field-row-3">
+          <div class="field">
+            <label>Etiqueta de precio</label>
+            <select id="priceLabel">
+              <option>Mayoreo</option>
+              <option>PVP</option>
+              <option>Distribuidor</option>
+              <option>Precio FOB</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Moneda</label>
+            <select id="currency">
+              <option value="USD">USD</option>
+              <option value="PAB">PAB · Balboa</option>
+              <option value="CRC">CRC · Colón (CR)</option>
+              <option value="GTQ">GTQ · Quetzal</option>
+              <option value="HNL">HNL · Lempira</option>
+              <option value="NIO">NIO · Córdoba</option>
+              <option value="DOP">DOP · Peso (DO)</option>
+              <option value="MXN">MXN · Peso (MX)</option>
+              <option value="EUR">EUR · Euro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Valor</label>
+            <input type="number" id="priceValue" step="0.01" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Origen FOB</label>
+          <select id="fobOrigin">
+            <option value="">— Ninguno —</option>
+            <option value="FOB China">FOB China</option>
+            <option value="FOB ZL">FOB ZL · Zona Libre de Colón</option>
+            <option value="Entrega Local">Entrega Local</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>MOQ (cantidad mínima)</label>
+            <input type="text" id="moq" />
+          </div>
+          <div class="field">
+            <label>Tiempo de entrega</label>
+            <input type="text" id="leadTime" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Datos del Documento</h2>
+        <div class="field-row">
+          <div class="field">
+            <label>Tipo de documento</label>
+            <input type="text" id="docType" value="Sales Sheet" />
+          </div>
+          <div class="field">
+            <label>Año</label>
+            <input type="text" id="docYear" value="2026" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Revisión</label>
+            <input type="text" id="docRev" />
+          </div>
+          <div class="field">
+            <label>Audiencia</label>
+            <select id="docAudience">
+              <option>Canal B2B</option>
+              <option>B2C</option>
+              <option>Interno</option>
+              <option>Distribuidor</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Empresa y Contacto</h2>
+        <div class="field">
+          <label>Empresa / d/b/a (pie de página)</label>
+          <input type="text" id="companyName" />
+        </div>
+        <div class="field">
+          <label>Línea de marca registrada</label>
+          <textarea id="trademark" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Salida</h2>
+        <div class="field">
+          <label>Tamaño de página</label>
+          <select id="pageSize">
+            <option value="letter">Carta (8.5×11 pulg)</option>
+            <option value="a4">A4</option>
+          </select>
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="overflowCheck" checked />
+          Mostrar advertencia de desbordamiento
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h2>Biblioteca de Series</h2>
+        <div style="font-size:10px;color:#8a8b96;line-height:1.5;margin-bottom:10px;">Guarda series reutilizables (nombre + logo + imagen lifestyle + copy). Selecciónalas desde el menú en Marca e Identidad.</div>
+        <div id="seriesLibraryList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button class="btn secondary" id="saveCurrentSeries" style="flex:1;">Guardar serie actual</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn secondary" id="exportLibrary" style="flex:1;">Exportar biblioteca</button>
+          <button class="btn secondary" id="importLibrary" style="flex:1;">Importar biblioteca</button>
+        </div>
+      </div>
+
+      <div class="form-section" style="border-bottom:none;">
+        <h2>Datos</h2>
+        <div style="display:flex;gap:8px;">
+          <button class="btn secondary" id="loadExample" style="flex:1;">Cargar ejemplo Tokyo</button>
+          <button class="btn secondary" id="clearAll" style="flex:1;background:#5a2e2e;">Borrar todo</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<input type="file" id="jsonImport" accept=".json" style="display:none" />
+<input type="file" id="libraryImport" accept=".json" style="display:none" />
+
+<script>
+"use strict";
+
+var state = {
+  brand: 'rca',
+  brandMode: 'extended',
+  seriesName: '',
+  model: '',
+  category: '',
+  headline: '',
+  headlineEm: '',
+  subhead: '',
+  productImg: '',
+  lifestyleImg: '',
+  seriesLogo: '',
+  brandLogo: '',
+  stats: [],
+  bar: [],
+  featuresEyebrow: 'Por qué se vende',
+  featuresTitle: '',
+  featuresTitleEm: '',
+  featuresAside: '',
+  features: [],
+  specs: [],
+  pitchEyebrow: 'El argumento',
+  pitchHeadline: '',
+  pitchHeadlineEm: '',
+  pitchBody: '',
+  pitchSignoff: '',
+  boxTitle: '',
+  box: [],
+  showPrice: true,
+  priceLabel: 'Mayoreo',
+  currency: 'USD',
+  priceValue: '',
+  fobOrigin: '',
+  moq: '',
+  leadTime: '',
+  docType: 'Sales Sheet',
+  docYear: '2026',
+  docRev: '',
+  docAudience: 'Canal B2B',
+  companyName: '',
+  trademark: '',
+  pageSize: 'letter',
+  overflowCheck: true
+};
+
+var seriesLibrary = [];
+
+var BRAND_DEFAULTS = {
+  'rca': {
+    logoText: 'RCA',
+    logoClass: '',
+    signoff: 'Hoy como siempre, RCA es <strong>Made for Moments</strong>.',
+    footerMade: 'MADE FOR <span>MOMENTS</span>',
+    trademark: 'RCA Trademark Management S.A. Usado bajo licencia por Talisman Brands, Inc.'
+  },
+  'westinghouse': {
+    logoText: 'W',
+    logoClass: 'westinghouse',
+    signoff: 'Powering People <strong>since 1886</strong>.',
+    footerMade: 'POWERING <span>PEOPLE</span> SINCE 1886',
+    trademark: '(W) y Westinghouse son marcas de Westinghouse Electric Corporation. Usadas bajo licencia.'
+  },
+  'hotline-blanca': {
+    logoText: 'H',
+    logoClass: '',
+    signoff: 'Hotline <strong>Desde 1985</strong>',
+    footerMade: 'HOTLINE <span>DESDE 1985</span>',
+    trademark: 'Hotline. Todos los derechos reservados.'
+  },
+  'hotline-tv': {
+    logoText: 'H',
+    logoClass: '',
+    signoff: 'Hotline <strong>Desde 1985</strong>',
+    footerMade: 'HOTLINE <span>DESDE 1985</span>',
+    trademark: 'Hotline. Todos los derechos reservados.'
+  },
+  'hotline-audio': {
+    logoText: 'H',
+    logoClass: '',
+    signoff: 'Hotline <strong>Desde 1985</strong>',
+    footerMade: 'HOTLINE <span>DESDE 1985</span>',
+    trademark: 'Hotline. Todos los derechos reservados.'
+  },
+  'hotline-cuidado': {
+    logoText: 'H',
+    logoClass: '',
+    signoff: 'Hotline <strong>Desde 1985</strong>',
+    footerMade: 'HOTLINE <span>DESDE 1985</span>',
+    trademark: 'Hotline. Todos los derechos reservados.'
+  }
+};
+
+var CURRENCY_SYMBOLS = {
+  USD: '$', PAB: 'B/.', CRC: '\u20A1', GTQ: 'Q', HNL: 'L', NIO: 'C$', DOP: 'RD$', MXN: '$', EUR: '\u20AC'
+};
+
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function escAllowSmall(s) {
+  return esc(s)
+    .replace(/&lt;small&gt;/g, '<small>')
+    .replace(/&lt;\/small&gt;/g, '</small>');
+}
+
+function makeRepeater(containerId, addBtnId, fields, stateKey, defaultItem) {
+  var container = document.getElementById(containerId);
+  var addBtn = document.getElementById(addBtnId);
+
+  function render() {
+    container.innerHTML = '';
+    state[stateKey].forEach(function(item, idx) {
+      var div = document.createElement('div');
+      div.className = 'repeater-item';
+      var html = '<button class="remove" data-idx="' + idx + '">\u00D7</button>';
+      fields.forEach(function(f) {
+        html += '<div class="field"><label>' + f.label + '</label>';
+        var val = item[f.key] || '';
+        if (f.type === 'textarea') {
+          html += '<textarea data-key="' + f.key + '" data-idx="' + idx + '" rows="2">' + esc(val) + '</textarea>';
+        } else {
+          html += '<input type="text" data-key="' + f.key + '" data-idx="' + idx + '" value="' + esc(val) + '" placeholder="' + (f.placeholder || '') + '" />';
+        }
+        html += '</div>';
+      });
+      div.innerHTML = html;
+      container.appendChild(div);
+    });
+    container.querySelectorAll('input, textarea').forEach(function(el) {
+      el.addEventListener('input', function(e) {
+        var i = parseInt(e.target.dataset.idx, 10);
+        state[stateKey][i][e.target.dataset.key] = e.target.value;
+        renderPreview();
+      });
+    });
+    container.querySelectorAll('.remove').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        state[stateKey].splice(parseInt(e.target.dataset.idx, 10), 1);
+        render();
+        renderPreview();
+      });
+    });
+  }
+  addBtn.addEventListener('click', function() {
+    state[stateKey].push(Object.assign({}, defaultItem));
+    render();
+    renderPreview();
+  });
+  return render;
+}
+
+var renderStats = makeRepeater('statsRepeater', 'addStat',
+  [{ key: 'value', label: 'Valor (ej. 40W)', type: 'text' },
+   { key: 'label', label: 'Etiqueta (ej. Potencia)', type: 'text' }],
+  'stats', { value: '', label: '' });
+
+var renderBar = makeRepeater('barRepeater', 'addBar',
+  [{ key: 'label', label: 'Etiqueta', type: 'text' },
+   { key: 'value', label: 'Valor', type: 'text' }],
+  'bar', { label: '', value: '' });
+
+var renderFeatures = makeRepeater('featuresRepeater', 'addFeature',
+  [{ key: 'num', label: 'Número/categoría (ej. 01 / RGB)', type: 'text' },
+   { key: 'title', label: 'Título', type: 'text' },
+   { key: 'desc', label: 'Descripción', type: 'textarea' }],
+  'features', { num: '', title: '', desc: '' });
+
+var renderBox = makeRepeater('boxRepeater', 'addBoxItem',
+  [{ key: 'item', label: 'Artículo', type: 'text' },
+   { key: 'qty', label: 'Cantidad', type: 'text' }],
+  'box', { item: '', qty: '\u00D71' });
+
+function renderSpecs() {
+  var container = document.getElementById('specsRepeater');
+  container.innerHTML = '';
+  state.specs.forEach(function(group, gi) {
+    var div = document.createElement('div');
+    div.className = 'repeater-item';
+    var html = '<button class="remove" data-gi="' + gi + '">\u00D7</button>';
+    html += '<div class="field"><label>Título del grupo</label>';
+    html += '<input type="text" data-key="title" data-gi="' + gi + '" value="' + esc(group.title || '') + '" />';
+    html += '</div>';
+    html += '<div class="field"><label style="font-size:10px;">Filas de especificaciones</label>';
+    html += '<div class="repeater" data-rows="' + gi + '"></div>';
+    html += '<button class="add-btn add-row" data-gi="' + gi + '" style="margin-top:4px;">+ Agregar fila</button>';
+    html += '</div>';
+    div.innerHTML = html;
+    container.appendChild(div);
+
+    var rowsContainer = div.querySelector('[data-rows="' + gi + '"]');
+    (group.rows || []).forEach(function(row, ri) {
+      var rdiv = document.createElement('div');
+      rdiv.className = 'repeater-item';
+      rdiv.style.padding = '4px';
+      var rhtml = '<button class="remove" data-gi="' + gi + '" data-ri="' + ri + '">\u00D7</button>';
+      rhtml += '<div class="field-row">';
+      rhtml += '<input type="text" data-spec-key="key" data-gi="' + gi + '" data-ri="' + ri + '" value="' + esc(row.key || '') + '" placeholder="Característica" />';
+      rhtml += '<input type="text" data-spec-key="value" data-gi="' + gi + '" data-ri="' + ri + '" value="' + esc(row.value || '') + '" placeholder="Valor" />';
+      rhtml += '</div>';
+      rdiv.innerHTML = rhtml;
+      rowsContainer.appendChild(rdiv);
+    });
+  });
+
+  container.querySelectorAll('input[data-key="title"]').forEach(function(el) {
+    el.addEventListener('input', function(e) {
+      state.specs[parseInt(e.target.dataset.gi, 10)].title = e.target.value;
+      renderPreview();
+    });
+  });
+  container.querySelectorAll('input[data-spec-key]').forEach(function(el) {
+    el.addEventListener('input', function(e) {
+      var gi = parseInt(e.target.dataset.gi, 10);
+      var ri = parseInt(e.target.dataset.ri, 10);
+      state.specs[gi].rows[ri][e.target.dataset.specKey] = e.target.value;
+      renderPreview();
+    });
+  });
+  container.querySelectorAll('.remove[data-gi]:not([data-ri])').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      state.specs.splice(parseInt(e.currentTarget.dataset.gi, 10), 1);
+      renderSpecs();
+      renderPreview();
+    });
+  });
+  container.querySelectorAll('.remove[data-ri]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      var gi = parseInt(e.currentTarget.dataset.gi, 10);
+      var ri = parseInt(e.currentTarget.dataset.ri, 10);
+      state.specs[gi].rows.splice(ri, 1);
+      renderSpecs();
+      renderPreview();
+    });
+  });
+  container.querySelectorAll('.add-row').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      var gi = parseInt(e.currentTarget.dataset.gi, 10);
+      if (!state.specs[gi].rows) state.specs[gi].rows = [];
+      state.specs[gi].rows.push({ key: '', value: '' });
+      renderSpecs();
+      renderPreview();
+    });
+  });
+}
+document.getElementById('addSpecGroup').addEventListener('click', function() {
+  state.specs.push({ title: '', rows: [{ key: '', value: '' }] });
+  renderSpecs();
+  renderPreview();
+});
+
+var simpleFields = [
+  'brand','brandMode','seriesName','model','category','headline','headlineEm','subhead',
+  'featuresEyebrow','featuresTitle','featuresTitleEm','featuresAside',
+  'pitchEyebrow','pitchHeadline','pitchHeadlineEm','pitchBody','pitchSignoff','boxTitle',
+  'priceLabel','currency','priceValue','fobOrigin','moq','leadTime','docType','docYear',
+  'docRev','docAudience','companyName','trademark','pageSize'
+];
+simpleFields.forEach(function(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', function() { state[id] = el.value; renderPreview(); });
+  el.addEventListener('change', function() { state[id] = el.value; renderPreview(); });
+});
+
+['showPrice','overflowCheck'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('change', function() { state[id] = el.checked; renderPreview(); });
+});
+
+function bindFileUpload(inputId, labelId, previewId, stateKey) {
+  var input = document.getElementById(inputId);
+  var label = document.getElementById(labelId);
+  var preview = document.getElementById(previewId);
+  input.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      state[stateKey] = ev.target.result;
+      label.textContent = file.name;
+      label.classList.add('has-file');
+      preview.style.backgroundImage = 'url(' + ev.target.result + ')';
+      preview.classList.add('show');
+      if (stateKey === 'seriesLogo') {
+        document.getElementById('clearSeriesLogo').style.display = 'block';
+      }
+      if (stateKey === 'brandLogo') {
+        document.getElementById('clearBrandLogo').style.display = 'block';
+      }
+      renderPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+bindFileUpload('productImg', 'productImgLabel', 'productImgPreview', 'productImg');
+bindFileUpload('lifestyleImg', 'lifestyleImgLabel', 'lifestyleImgPreview', 'lifestyleImg');
+bindFileUpload('seriesLogo', 'seriesLogoLabel', 'seriesLogoPreview', 'seriesLogo');
+bindFileUpload('brandLogo', 'brandLogoLabel', 'brandLogoPreview', 'brandLogo');
+
+document.getElementById('clearSeriesLogo').addEventListener('click', function() {
+  state.seriesLogo = '';
+  var label = document.getElementById('seriesLogoLabel');
+  var preview = document.getElementById('seriesLogoPreview');
+  label.textContent = '+ Subir logo de serie';
+  label.classList.remove('has-file');
+  preview.style.backgroundImage = '';
+  preview.classList.remove('show');
+  document.getElementById('clearSeriesLogo').style.display = 'none';
+  document.getElementById('seriesLogo').value = '';
+  renderPreview();
+});
+
+document.getElementById('clearBrandLogo').addEventListener('click', function() {
+  state.brandLogo = '';
+  var label = document.getElementById('brandLogoLabel');
+  var preview = document.getElementById('brandLogoPreview');
+  label.textContent = '+ Subir logo de marca';
+  label.classList.remove('has-file');
+  preview.style.backgroundImage = '';
+  preview.classList.remove('show');
+  document.getElementById('clearBrandLogo').style.display = 'none';
+  document.getElementById('brandLogo').value = '';
+  renderPreview();
+});
+
+document.getElementById('brand').addEventListener('change', function() {
+  var d = BRAND_DEFAULTS[state.brand];
+  if (d) {
+    state.trademark = d.trademark;
+    document.getElementById('trademark').value = state.trademark;
+  }
+  renderPreview();
+});
+
+function updateModeExplainer() {
+  var el = document.getElementById('modeExplainer');
+  if (!el) return;
+  if (state.brandMode === 'extended') {
+    el.innerHTML = '<span style="color:#9aa0ff;">Extendido:</span> la imagen lifestyle se vuelve el fondo oscuro/neón del hero, aparece el logo de serie, el titular usa gradiente, tipografía expresiva. Ideal para sales sheets B2B de retail.';
+  } else {
+    el.innerHTML = '<span style="color:#ffb86b;">Estricto:</span> respeta el manual de marca \u2014 hero limpio sobre color de marca, sin logo de serie, sin gradiente, tipografía restringida. La imagen lifestyle se ignora.';
+  }
+}
+document.getElementById('brandMode').addEventListener('change', updateModeExplainer);
+
+document.getElementById('openAdmin').addEventListener('click', function() {
+  document.getElementById('adminOverlay').classList.add('show');
+});
+document.getElementById('closeAdmin').addEventListener('click', function() {
+  document.getElementById('adminOverlay').classList.remove('show');
+});
+document.getElementById('adminOverlay').addEventListener('click', function(e) {
+  if (e.target.id === 'adminOverlay') {
+    document.getElementById('adminOverlay').classList.remove('show');
+  }
+});
+
+document.getElementById('printBtn').addEventListener('click', function() {
+  var existing = document.getElementById('dynamic-print-style');
+  if (existing) existing.remove();
+  var style = document.createElement('style');
+  style.id = 'dynamic-print-style';
+  var ps = state.pageSize === 'a4' ? 'A4' : 'letter';
+  style.textContent =
+    '@media print {' +
+    '  @page { size: ' + ps + '; margin: 0; }' +
+    '  html, body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }' +
+    '}';
+  document.head.appendChild(style);
+  try {
+    window.print();
+  } catch (err) {
+    alert('No se pudo abrir el diálogo de impresión. Si estás dentro de Claude, intenta abrir el artefacto en una pestaña nueva.');
+  }
+});
+
+document.getElementById('exportJSON').addEventListener('click', function() {
+  var data = JSON.stringify(state, null, 2);
+  var blob = new Blob([data], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = (state.model || 'sales-sheet') + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('importJSON').addEventListener('click', function() {
+  document.getElementById('jsonImport').click();
+});
+document.getElementById('jsonImport').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var data = JSON.parse(ev.target.result);
+      Object.assign(state, data);
+      hydrateFormFromState();
+      renderPreview();
+    } catch (err) { alert('Archivo JSON inválido'); }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('clearAll').addEventListener('click', function() {
+  if (!confirm('¿Borrar todos los campos?')) return;
+  Object.keys(state).forEach(function(k) {
+    if (Array.isArray(state[k])) state[k] = [];
+    else if (typeof state[k] === 'boolean') state[k] = false;
+    else state[k] = '';
+  });
+  state.brand = 'rca';
+  state.brandMode = 'extended';
+  state.priceLabel = 'Mayoreo';
+  state.currency = 'USD';
+  state.docType = 'Sales Sheet';
+  state.docYear = '2026';
+  state.docAudience = 'Canal B2B';
+  state.pageSize = 'letter';
+  state.featuresEyebrow = 'Por qué se vende';
+  state.pitchEyebrow = 'El argumento';
+  state.overflowCheck = true;
+  state.showPrice = true;
+  hydrateFormFromState();
+  renderPreview();
+});
+
+document.getElementById('loadExample').addEventListener('click', loadTokyoExample);
+
+function loadTokyoExample() {
+  Object.assign(state, {
+    brand: 'rca',
+    brandMode: 'extended',
+    seriesName: 'Tokyo',
+    model: 'RCTS10100R',
+    category: 'Bocina Inalámbrica',
+    headline: 'Hecha para la',
+    headlineEm: 'fiesta sin fin.',
+    subhead: 'Dos woofers de 10\u2033. 100 watts RMS. RGB reactivo que vibra con el bajo. Conecta dos micrófonos inalámbricos y convierte el karaoke en una fiesta del barrio.',
+    productImg: '',
+    lifestyleImg: '',
+    seriesLogo: '',
+    brandLogo: '',
+    stats: [
+      { value: '10\u2033<small>\u00D72</small>', label: 'Woofers duales' },
+      { value: '100<small>W</small>', label: 'Potencia RMS' },
+      { value: '2<small>mics</small>', label: 'Inalámbricos incluidos' },
+      { value: '5.3<small>BT</small>', label: '+ USB · MicroSD · TWS' }
+    ],
+    bar: [
+      { label: 'Bluetooth', value: '5.3 inalámbrico' },
+      { label: 'USB', value: 'Reproducción directa' },
+      { label: 'Mic inalámbrico', value: 'Listo para karaoke' },
+      { label: 'Luces RGB', value: 'Reactivas al ritmo' }
+    ],
+    featuresEyebrow: 'Por qué se vende',
+    featuresTitle: 'Sonido grande, luces grandes,',
+    featuresTitleEm: 'hecho para la sala.',
+    featuresAside: 'La línea Tokyo \u2014 portátil para el patio, fuerte para el jardín, con estilo para llamar la atención.',
+    features: [
+      { num: '01 / RGB', title: 'Un show de luces al ritmo de la música.', desc: 'Anillos RGB duales sincronizados con el bajo y el ritmo, con múltiples modos.' },
+      { num: '02 / Potencia', title: '100W RMS, dos drivers de 10\u2033.', desc: 'Potencia continua real, afinada para medios completos y bajos profundos.' },
+      { num: '03 / Karaoke', title: 'Dos micrófonos inalámbricos listos.', desc: 'Par UHF incluido \u2014 pásalos a tus amigos, con eco ajustable.' },
+      { num: '04 / Conectividad', title: 'Bluetooth, USB, AUX, microSD.', desc: 'Transmite desde cualquier teléfono, conecta un USB, o por cable a la antigua.' },
+      { num: '05 / TWS', title: 'Empareja dos \u2014 duplica el espacio.', desc: 'True Wireless Stereo conecta dos unidades en par izquierdo/derecho.' },
+      { num: '06 / Construcción', title: 'Asa superior, rejilla reforzada.', desc: 'Portátil con una mano, rejilla metálica rígida, base con goma antideslizante.' }
+    ],
+    specs: [
+      { title: 'Audio', rows: [
+        { key: 'Potencia de salida', value: '100W RMS / 200W pico' },
+        { key: 'Drivers', value: '2 × 10\u2033 rango completo' },
+        { key: 'Frecuencia', value: '50 Hz - 20 kHz' },
+        { key: 'EQ', value: 'Graves / Agudos / Eco' }
+      ]},
+      { title: 'Conectividad', rows: [
+        { key: 'Bluetooth', value: 'v5.3, alcance 10m+' },
+        { key: 'Emparejamiento TWS', value: 'Dos unidades, L/R estéreo' },
+        { key: 'USB', value: 'USB-A / MP3 / WAV' },
+        { key: 'microSD', value: 'Hasta 32 GB' }
+      ]},
+      { title: 'Energía y Construcción', rows: [
+        { key: 'Entrada de energía', value: 'AC 100-240V' },
+        { key: 'Iluminación', value: 'RGB reactivo, 6 modos' },
+        { key: 'Movilidad', value: 'Asa telescópica, ruedas' },
+        { key: 'Peso', value: '6.8 kg / 15 lb' }
+      ]}
+    ],
+    pitchEyebrow: 'El argumento',
+    pitchHeadline: 'De la cocina al jardín \u2014',
+    pitchHeadlineEm: 'Tokyo reúne a todos.',
+    pitchBody: 'La RCTS10100R es la bocina más potente y festiva de nuestra línea portátil. Dos woofers de 10 pulgadas, 100 watts RMS limpios, un anillo completo de LEDs reactivos y dos micrófonos inalámbricos en la caja \u2014 todo lo que necesitas para animar la noche.',
+    pitchSignoff: '',
+    boxTitle: 'Todo listo para sonar.',
+    box: [
+      { item: 'Bocina RCTS10100R Tokyo', qty: '\u00D71' },
+      { item: 'Micrófono inalámbrico UHF', qty: '\u00D72' },
+      { item: 'Control remoto IR', qty: '\u00D71' },
+      { item: 'Cable de poder AC', qty: '\u00D71' },
+      { item: 'Cable AUX 3.5 mm', qty: '\u00D71' },
+      { item: 'Guía rápida / garantía', qty: '\u00D71' }
+    ],
+    showPrice: true,
+    priceLabel: 'Mayoreo',
+    currency: 'USD',
+    priceValue: '84.90',
+    fobOrigin: 'FOB ZL',
+    moq: '',
+    leadTime: '',
+    docType: 'Sales Sheet',
+    docYear: '2026',
+    docRev: 'Rev. 04/26',
+    docAudience: 'Canal B2B',
+    companyName: 'Talisman Brands, Inc.',
+    trademark: 'Talisman Brands, Inc. d/b/a Established. RCA y el logo RCA son marcas registradas.',
+    pageSize: 'letter',
+    overflowCheck: true
+  });
+  hydrateFormFromState();
+  renderPreview();
+}
+
+function hydrateFormFromState() {
+  simpleFields.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && state[id] !== undefined) el.value = state[id];
+  });
+  ['showPrice','overflowCheck'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && state[id] !== undefined) el.checked = state[id];
+  });
+  ['productImg','lifestyleImg','seriesLogo','brandLogo'].forEach(function(key) {
+    var preview = document.getElementById(key + 'Preview');
+    var label = document.getElementById(key + 'Label');
+    if (state[key]) {
+      if (preview) {
+        preview.style.backgroundImage = 'url(' + state[key] + ')';
+        preview.classList.add('show');
+      }
+      if (label) {
+        label.textContent = 'Reemplazar imagen';
+        label.classList.add('has-file');
+      }
+    } else {
+      if (preview) {
+        preview.style.backgroundImage = '';
+        preview.classList.remove('show');
+      }
+      if (label) {
+        var labels = {
+          productImg: '+ Subir imagen de producto',
+          lifestyleImg: '+ Subir imagen lifestyle',
+          seriesLogo: '+ Subir logo de serie',
+          brandLogo: '+ Subir logo de marca'
+        };
+        label.textContent = labels[key];
+        label.classList.remove('has-file');
+      }
+    }
+  });
+  var clearSeriesBtn = document.getElementById('clearSeriesLogo');
+  if (clearSeriesBtn) clearSeriesBtn.style.display = state.seriesLogo ? 'block' : 'none';
+  var clearBrandBtn = document.getElementById('clearBrandLogo');
+  if (clearBrandBtn) clearBrandBtn.style.display = state.brandLogo ? 'block' : 'none';
+  renderStats();
+  renderBar();
+  renderFeatures();
+  renderSpecs();
+  renderBox();
+  updateModeExplainer();
+}
+
+function renderPreview() {
+  var wrap = document.getElementById('pageWrap');
+  var brand = state.brand;
+  var defaults = BRAND_DEFAULTS[brand] || BRAND_DEFAULTS.rca;
+  var currencySymbol = CURRENCY_SYMBOLS[state.currency] || '$';
+
+  document.getElementById('metaTitle').textContent = (state.model || 'Sin título') + ' \u00B7 ' + (state.category || 'Sales Sheet');
+  document.getElementById('metaPage').textContent = state.pageSize === 'a4' ? 'A4' : 'Carta';
+
+  var isExtended = state.brandMode === 'extended';
+  var isStrict = state.brandMode === 'strict';
+
+  var priceBlock;
+  if (state.showPrice && state.priceValue) {
+    var fobLine = '';
+    if (state.fobOrigin) {
+      var curSuffix = state.currency !== 'USD' ? (' \u00B7 ' + state.currency) : ' \u00B7 USD';
+      fobLine = '<div class="price-fob">' + esc(state.fobOrigin) + curSuffix + '</div>';
+    }
+    priceBlock = ''
+      + '<div class="p-price-block">'
+      + '<div class="price-label">' + esc(state.priceLabel) + '</div>'
+      + '<div class="price-value"><span class="currency">' + currencySymbol + '</span>' + esc(state.priceValue) + '</div>'
+      + fobLine
+      + '</div>';
+  } else {
+    var skuTag = state.model ? ('<div class="p-sku-tag">SKU \u00B7 ' + esc(state.model) + '</div>') : '';
+    priceBlock = ''
+      + '<div class="p-price-block">'
+      + '<div class="docmeta">' + esc(state.docYear) + ' \u00B7 ' + esc(state.docAudience) + '</div>'
+      + skuTag
+      + '</div>';
+  }
+
+  var logoBlock = state.brandLogo
+    ? ('<div class="p-logo-img"><img src="' + state.brandLogo + '" alt="' + brand + '" /></div>')
+    : ('<div class="p-logo ' + (defaults.logoClass || '') + '">' + defaults.logoText + '</div>');
+
+  var seriesKicker = state.seriesName ? (' \u00B7 Serie ' + esc(state.seriesName)) : '';
+  var topBar = ''
+    + '<header class="p-topbar">'
+    + '<div class="p-topbar-left">'
+    + logoBlock
+    + '<div class="p-topbar-meta">'
+    + '<div class="kicker">' + esc(state.category || 'Producto de Audio') + seriesKicker + '</div>'
+    + '<div class="title">' + esc(state.model || 'Modelo') + ' \u00B7 ' + esc(state.docType) + '</div>'
+    + '</div>'
+    + '</div>'
+    + priceBlock
+    + '</header>';
+
+  var heroIsPhoto = isExtended && state.lifestyleImg;
+  var heroClasses = ['p-hero'];
+  if (isStrict) heroClasses.push('strict-hero');
+  if (brand === 'westinghouse' && !heroIsPhoto && !isStrict) heroClasses.push('westinghouse-style');
+
+  var heroBg = heroIsPhoto ? ('<div class="p-hero-bg has-accent" style="background-image:url(' + state.lifestyleImg + ');"></div>') : '';
+
+  var seriesStamp = '';
+  if (isExtended && state.seriesLogo) {
+    seriesStamp = '<div class="series-stamp"><img src="' + state.seriesLogo + '" alt="' + esc(state.seriesName || 'Serie') + '" /></div>';
+  }
+
+  var stats = '';
+  state.stats.forEach(function(s, i) {
+    if (i > 0) stats += '<div class="p-stat-divider"></div>';
+    stats += ''
+      + '<div class="p-stat">'
+      + '<div class="v">' + escAllowSmall(s.value) + '</div>'
+      + '<div class="l">' + esc(s.label) + '</div>'
+      + '</div>';
+  });
+
+  var productImg = state.productImg
+    ? ('<img src="' + state.productImg + '" alt="' + esc(state.model) + '" />')
+    : '<div class="placeholder">Sube una imagen de producto</div>';
+
+  var heroEyebrow = '';
+  if (isExtended && (state.seriesName || state.category)) {
+    var eyText = state.seriesName ? ('Nueva \u00B7 ' + state.seriesName) : state.category;
+    heroEyebrow = '<div class="p-hero-eyebrow"><span class="dot"></span>' + esc(eyText) + '</div>';
+  } else if (isStrict && state.category) {
+    heroEyebrow = '<div class="p-hero-eyebrow strict"><span class="dot"></span>' + esc(state.category) + '</div>';
+  }
+
+  var h1Classes = '';
+  if (isExtended && brand === 'rca') h1Classes += 'gradient ';
+  if (isStrict) h1Classes += 'strict';
+  var h1Em = state.headlineEm ? ('<em>' + esc(state.headlineEm) + '</em>') : '';
+  var heroSub = state.subhead ? ('<p class="p-hero-sub">' + esc(state.subhead) + '</p>') : '';
+  var heroStatsBlock = stats ? ('<div class="p-hero-stats">' + stats + '</div>') : '';
+
+  var heroHtml = ''
+    + '<section class="' + heroClasses.join(' ') + '">'
+    + heroBg
+    + seriesStamp
+    + '<div class="p-hero-grid">'
+    + '<div class="p-hero-copy">'
+    + '<div>'
+    + heroEyebrow
+    + '<h1 class="' + h1Classes + '">' + esc(state.headline) + ' ' + h1Em + '</h1>'
+    + heroSub
+    + '</div>'
+    + heroStatsBlock
+    + '</div>'
+    + '<div class="p-hero-product">'
+    + '<div class="glow"></div>'
+    + productImg
+    + '</div>'
+    + '</div>'
+    + '</section>';
+
+  var featureBar = '';
+  if (state.bar.length) {
+    var cols = Math.min(state.bar.length, 6);
+    var bars = '';
+    state.bar.forEach(function(b) {
+      bars += ''
+        + '<div class="f">'
+        + '<div class="lab">' + esc(b.label) + '</div>'
+        + '<div class="val">' + esc(b.value) + '</div>'
+        + '</div>';
+    });
+    featureBar = '<div class="p-featurebar" style="--feat-bar-cols:' + cols + ';">' + bars + '</div>';
+  }
+
+  var featuresSection = '';
+  if (state.features.length || state.featuresTitle) {
+    var head = '';
+    if (state.featuresEyebrow || state.featuresTitle) {
+      var ey = state.featuresEyebrow ? ('<div class="p-section-eyebrow">' + esc(state.featuresEyebrow) + '</div>') : '';
+      var titleEm = state.featuresTitleEm ? (' <strong>' + esc(state.featuresTitleEm) + '</strong>') : '';
+      var title = state.featuresTitle ? ('<h2 class="p-section-title">' + esc(state.featuresTitle) + titleEm + '</h2>') : '';
+      var aside = state.featuresAside ? ('<p class="p-section-aside">' + esc(state.featuresAside) + '</p>') : '';
+      head = '<div class="p-section-head"><div>' + ey + title + '</div>' + aside + '</div>';
+    }
+    var cards = '';
+    if (state.features.length) {
+      state.features.forEach(function(f) {
+        var num = f.num ? ('<div class="num">' + esc(f.num) + '</div>') : '';
+        var tt = f.title ? ('<h3>' + esc(f.title) + '</h3>') : '';
+        var desc = f.desc ? ('<p>' + esc(f.desc) + '</p>') : '';
+        cards += '<div class="p-feat">' + num + tt + desc + '</div>';
+      });
+      cards = '<div class="p-features">' + cards + '</div>';
+    }
+    featuresSection = '<section class="p-section">' + head + cards + '</section>';
+  }
+
+  var specsSection = '';
+  var validSpecs = state.specs.filter(function(g) {
+    return g.title || (g.rows && g.rows.some(function(r) { return r.key || r.value; }));
+  });
+  if (validSpecs.length) {
+    var groups = '';
+    validSpecs.forEach(function(g) {
+      var h4 = g.title ? ('<h4>' + esc(g.title) + '</h4>') : '';
+      var rows = '';
+      (g.rows || []).filter(function(r) { return r.key || r.value; }).forEach(function(r) {
+        rows += '<dt>' + esc(r.key) + '</dt><dd>' + esc(r.value) + '</dd>';
+      });
+      groups += '<div class="p-spec-group">' + h4 + '<dl>' + rows + '</dl></div>';
+    });
+    specsSection = ''
+      + '<section class="p-section" style="padding-top:0;">'
+      + '<div class="p-section-head"><div>'
+      + '<div class="p-section-eyebrow">Especificaciones</div>'
+      + '<h2 class="p-section-title">Los datos <strong>técnicos.</strong></h2>'
+      + '</div></div>'
+      + '<div class="p-specs">' + groups + '</div>'
+      + '</section>';
+  }
+
+  var splitSection = '';
+  if (state.pitchHeadline || state.box.length) {
+    var signoff = state.pitchSignoff || defaults.signoff;
+    var pitch = '<div></div>';
+    if (state.pitchHeadline || state.pitchBody) {
+      var pey = state.pitchEyebrow ? ('<div class="p-section-eyebrow">' + esc(state.pitchEyebrow) + '</div>') : '';
+      var pheadEm = state.pitchHeadlineEm ? (' <strong>' + esc(state.pitchHeadlineEm) + '</strong>') : '';
+      var phead = state.pitchHeadline ? ('<h3>' + esc(state.pitchHeadline) + pheadEm + '</h3>') : '';
+      var pbody = state.pitchBody ? ('<p>' + esc(state.pitchBody) + '</p>') : '';
+      var sign = signoff ? ('<div class="signoff">' + signoff + '</div>') : '';
+      pitch = '<div class="p-pitch">' + pey + phead + pbody + sign + '</div>';
+    }
+    var box = '';
+    if (state.box.length) {
+      var boxTitle = state.boxTitle ? ('<h3 style="font-size:13px;">' + esc(state.boxTitle) + '</h3>') : '';
+      var items = '';
+      state.box.filter(function(b) { return b.item; }).forEach(function(b, i) {
+        var num = String(i + 1);
+        if (num.length < 2) num = '0' + num;
+        items += ''
+          + '<li>'
+          + '<span class="num">' + num + '</span>'
+          + '<span>' + esc(b.item) + '</span>'
+          + '<span class="qty">' + esc(b.qty) + '</span>'
+          + '</li>';
+      });
+      box = '<div class="p-box">' + boxTitle + '<ul class="p-box-list">' + items + '</ul></div>';
+    }
+    splitSection = '<section class="p-section" style="padding-top:0;"><div class="p-split">' + pitch + box + '</div></section>';
+  }
+
+  var footerLeft = state.trademark || defaults.trademark;
+  var footerRev = state.docRev ? (' \u00B7 ' + esc(state.docRev)) : '';
+  var footer = ''
+    + '<footer class="p-footer">'
+    + '<div>' + esc(footerLeft) + footerRev + '</div>'
+    + '<div class="made">' + defaults.footerMade + '</div>'
+    + '</footer>';
+
+  var sizeClass = state.pageSize === 'a4' ? 'a4' : '';
+  var pageCls = 'brand-' + brand + (sizeClass ? (' ' + sizeClass) : '');
+
+  wrap.innerHTML = ''
+    + '<div class="page ' + pageCls + '">'
+    + topBar
+    + heroHtml
+    + featureBar
+    + featuresSection
+    + specsSection
+    + splitSection
+    + footer
+    + '</div>';
+
+  setTimeout(function() {
+    var page = wrap.querySelector('.page');
+    if (!page) return;
+    var warning = document.getElementById('overflowWarning');
+    if (state.overflowCheck && page.scrollHeight > page.offsetHeight + 2) {
+      warning.classList.add('show');
+      page.classList.add('overflow');
+    } else {
+      warning.classList.remove('show');
+      page.classList.remove('overflow');
+    }
+    scaleToFit();
+  }, 30);
+}
+
+function scaleToFit() {
+  var wrap = document.getElementById('pageWrap');
+  var panel = wrap.parentElement;
+  var page = wrap.querySelector('.page');
+  if (!page) return;
+  var panelW = panel.clientWidth - 48;
+  var pageW = page.offsetWidth;
+  var pageH = page.offsetHeight;
+  if (!pageW || !pageH) return;
+  var scale = Math.min(panelW / pageW, 1);
+  wrap.style.transform = 'scale(' + scale + ')';
+  wrap.style.height = (pageH * scale) + 'px';
+  wrap.style.width = (pageW * scale) + 'px';
+}
+window.addEventListener('resize', scaleToFit);
+
+// ============ BIBLIOTECA DE SERIES ============
+function renderSeriesLibrary() {
+  var list = document.getElementById('seriesLibraryList');
+  if (!list) return;
+  if (!seriesLibrary.length) {
+    list.innerHTML = '<div style="font-size:10px;color:#6a6b76;font-style:italic;padding:8px;text-align:center;">Aún no hay series guardadas. Llena nombre + logo + imagen lifestyle, luego haz clic en "Guardar serie actual".</div>';
+  } else {
+    list.innerHTML = '';
+    seriesLibrary.forEach(function(s, idx) {
+      var item = document.createElement('div');
+      item.className = 'repeater-item';
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+      item.style.gap = '8px';
+      item.style.padding = '8px';
+
+      var thumb = '';
+      if (s.lifestyleImg || s.seriesLogo) {
+        var bg = s.lifestyleImg || s.seriesLogo;
+        thumb = '<div style="width:36px;height:36px;border-radius:4px;background-image:url(' + bg + ');background-size:cover;background-position:center;background-color:#0a0a0e;flex-shrink:0;"></div>';
+      } else {
+        thumb = '<div style="width:36px;height:36px;border-radius:4px;background:#0a0a0e;flex-shrink:0;"></div>';
+      }
+
+      var copyFields = ['subhead','featuresEyebrow','featuresTitle','featuresTitleEm','featuresAside','pitchHeadlineEm'];
+      var copyCount = copyFields.reduce(function(n, k) { return n + (s[k] ? 1 : 0); }, 0);
+
+      var meta = [];
+      if (s.seriesLogo) meta.push('logo');
+      if (s.lifestyleImg) meta.push('lifestyle');
+      if (copyCount) meta.push(copyCount + ' copy');
+
+      var name = '<div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:#e8e8ec;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(s.name) + '</div>';
+      name += '<div style="font-size:10px;color:#8a8b96;">' + (meta.length ? meta.join(' \u00B7 ') : 'vacía') + '</div></div>';
+
+      var btns = '<div style="display:flex;gap:4px;flex-shrink:0;">';
+      btns += '<button class="icon-btn" data-action="load" data-idx="' + idx + '" title="Cargar serie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>';
+      btns += '<button class="icon-btn" data-action="delete" data-idx="' + idx + '" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button>';
+      btns += '</div>';
+
+      item.innerHTML = thumb + name + btns;
+      list.appendChild(item);
+    });
+    list.querySelectorAll('button[data-action]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        var action = e.currentTarget.dataset.action;
+        var idx = parseInt(e.currentTarget.dataset.idx, 10);
+        if (action === 'load') loadSeriesFromLibrary(idx);
+        else if (action === 'delete') deleteSeriesFromLibrary(idx);
+      });
+    });
+  }
+
+  var picker = document.getElementById('seriesPicker');
+  if (picker) {
+    var current = picker.value;
+    picker.innerHTML = '<option value="">— Ninguna / Personalizado —</option>';
+    seriesLibrary.forEach(function(s, idx) {
+      var opt = document.createElement('option');
+      opt.value = String(idx);
+      opt.textContent = s.name;
+      picker.appendChild(opt);
+    });
+    picker.value = current;
+  }
+}
+
+function loadSeriesFromLibrary(idx) {
+  var s = seriesLibrary[idx];
+  if (!s) return;
+  state.seriesName = s.name || '';
+  state.seriesLogo = s.seriesLogo || '';
+  state.lifestyleImg = s.lifestyleImg || '';
+  if (s.subhead !== undefined) state.subhead = s.subhead;
+  if (s.featuresEyebrow !== undefined) state.featuresEyebrow = s.featuresEyebrow;
+  if (s.featuresTitle !== undefined) state.featuresTitle = s.featuresTitle;
+  if (s.featuresTitleEm !== undefined) state.featuresTitleEm = s.featuresTitleEm;
+  if (s.featuresAside !== undefined) state.featuresAside = s.featuresAside;
+  if (s.pitchHeadlineEm !== undefined) state.pitchHeadlineEm = s.pitchHeadlineEm;
+  hydrateFormFromState();
+  renderPreview();
+  var picker = document.getElementById('seriesPicker');
+  if (picker) picker.value = String(idx);
+}
+
+function deleteSeriesFromLibrary(idx) {
+  if (!confirm('¿Eliminar "' + seriesLibrary[idx].name + '" de la biblioteca?')) return;
+  seriesLibrary.splice(idx, 1);
+  renderSeriesLibrary();
+}
+
+document.getElementById('saveCurrentSeries').addEventListener('click', function() {
+  if (!state.seriesName) {
+    alert('Primero ingresa un nombre de serie (en Marca e Identidad).');
+    return;
+  }
+  var preset = {
+    name: state.seriesName,
+    seriesLogo: state.seriesLogo || '',
+    lifestyleImg: state.lifestyleImg || '',
+    subhead: state.subhead || '',
+    featuresEyebrow: state.featuresEyebrow || '',
+    featuresTitle: state.featuresTitle || '',
+    featuresTitleEm: state.featuresTitleEm || '',
+    featuresAside: state.featuresAside || '',
+    pitchHeadlineEm: state.pitchHeadlineEm || ''
+  };
+  var existingIdx = seriesLibrary.findIndex(function(s) { return s.name === state.seriesName; });
+  if (existingIdx >= 0) {
+    if (!confirm('Ya existe una serie llamada "' + state.seriesName + '". ¿Sobrescribir?')) return;
+    seriesLibrary[existingIdx] = preset;
+  } else {
+    seriesLibrary.push(preset);
+  }
+  renderSeriesLibrary();
+});
+
+document.getElementById('seriesPicker').addEventListener('change', function(e) {
+  var v = e.target.value;
+  if (v === '') return;
+  loadSeriesFromLibrary(parseInt(v, 10));
+});
+
+document.getElementById('exportLibrary').addEventListener('click', function() {
+  if (!seriesLibrary.length) {
+    alert('La biblioteca está vacía.');
+    return;
+  }
+  var data = JSON.stringify(seriesLibrary, null, 2);
+  var blob = new Blob([data], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'biblioteca-series.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importLibrary').addEventListener('click', function() {
+  document.getElementById('libraryImport').click();
+});
+
+document.getElementById('libraryImport').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error('No es un array');
+      var mode = seriesLibrary.length > 0
+        ? (confirm('¿Reemplazar la biblioteca existente? Aceptar = reemplazar, Cancelar = fusionar.') ? 'replace' : 'merge')
+        : 'replace';
+      if (mode === 'replace') {
+        seriesLibrary = data;
+      } else {
+        data.forEach(function(s) {
+          if (!seriesLibrary.find(function(ex) { return ex.name === s.name; })) {
+            seriesLibrary.push(s);
+          }
+        });
+      }
+      renderSeriesLibrary();
+    } catch (err) {
+      alert('Archivo JSON de biblioteca inválido');
+    }
+  };
+  reader.readAsText(file);
+});
+
+// ============ BOOT ============
+loadTokyoExample();
+renderSeriesLibrary();
+</script>
+</body>
+</html>
